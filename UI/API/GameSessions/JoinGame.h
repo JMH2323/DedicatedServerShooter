@@ -23,6 +23,8 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> TextBlock_StatusMessage;
+
+	void SetStatusMessage(const FString& Message) const;
 	
 };
 
