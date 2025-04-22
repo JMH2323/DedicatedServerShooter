@@ -1,0 +1,18 @@
+import { GameLiftClient, CreatePlayerSessionCommand } from "@aws-sdk/client-gamelift"; // ES Modules import
+
+export const handler = async (event) => {
+  try{
+    const gameLiftClient = new GameLiftClient( { region: process.env.REGION } );
+    const CreatePlayerSessionInput = { // CreatePlayerSessionInput
+      GameSessionId: event.gameSessionId, // required
+      PlayerId: event.playerId, // required
+      Location: "custom-home-desktop" // Remove this for EC2 Fleets
+    };
+    const createPlayerSessionCommand = new CreatePlayerSessionCommand(input);
+    const createPlayerSessionResponse = await gameLiftClient.send(createPlayerSessionCommand);
+    return createPlayerSessionResponse.PlayerSession;
+    
+  } catch (e) {
+    return e;
+  }
+};
