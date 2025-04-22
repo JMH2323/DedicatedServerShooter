@@ -1,0 +1,91 @@
+import { GameLiftClient, ListFleetsCommand, CreateGameSessionCommand, DescribeFleetAttributesCommand, DescribeGameSessionsCommand } from "@aws-sdk/client-gamelift"; // ES Modules import
+
+
+export const handler = async (event) => {
+  
+  const gameLiftClient = new GameLiftClient( {region: process.env.REGION});
+
+  try 
+  {
+    const listFleetsInput = {
+      Limit: 10
+    };
+    const listFleetsCommand = new ListFleetsCommand(listFleetsInput);
+    const listFleetsResponse = await gameLiftClient.send(listFleetsCommand);
+
+    const fleetIds = listFleetsResponse.FleetIds;
+
+    const describeFleetAttributesInput = { 
+      FleetIds: fleetIds,
+      Limit: 10
+    };
+
+    const describeFleetAttributesCommand = new DescribeFleetAttributesCommand(describeFleetAttributesInput);
+    const describeFleetAttributesResponse = await gameLiftClient.send(describeFleetAttributesCommand);
+
+    const fleetAttributes = describeFleetAttributesResponse.FleetAttributes;
+
+    let fleetID;
+    for (const fleetAttribute of fleetAttributes){
+      if (fleetAttribute.Status === "ACTIVE"){
+        fleetID = fleetAttribute.FleetId;
+        break;
+      }
+    }
+
+    if (!fleetID){
+      return "No active fleet found";
+    }
+
+    const describeGameSessionsInput = { // DescribeGameSessionsInput
+      FleetId: fleetID,
+      Limit: 10,
+      StatusFilter: "ACTIVE",
+      Location: "custom-home-desktop" // Remove for EC2
+    };
+
+    const describeGameSessionsCommand = new DescribeGameSessionsCommand(describeGameSessionsInput);
+    const describeGameSessionsResponse = await gameLiftClient.send(describeGameSessionsCommand);
+    const gameSessions = describeGameSessionsResponse.GameSessions;
+
+
+    let gameSession;
+    for (const session of gameSessions){
+      if (session.CurrentPlayerSessionCount < session.MaximumPlayerSessionCount && session.PlayerSessionCreationPolicy === "ACCEPT_ALL")
+      {
+        gameSession = session;
+        break;
+      }
+    }
+    if (gameSession){
+      // Found Session
+    } else {
+      // Create Session
+      const createGameSessionInput = {
+        GameProperties: [
+          {
+            Key: "difficulty",
+            Value: "novice"
+          },
+        ],
+        FleetId: fleetID,
+        MaximumPlayerSessionCount: 20,
+        Location: "custom-home-desktop" // Remove for EC2
+      };
+
+      const createGameSessionCommand = new CreateGameSessionCommand(createGameSessionInput);
+      const createGameSessionResponse = await gameLiftClient.send(createGameSessionCommand);
+      gameSession = createGameSessionResponse.GameSession;
+
+    }
+
+    
+
+  } catch (e) {
+    return e;
+  }
+
+
+
+
+};
