@@ -6,7 +6,9 @@
 #include "DedicatedServers/Data/API/APIData.h"
 #include "JsonObjectConverter.h"
 #include "DedicatedServers/UI/HTTP/HTTPRequestTypes.h"
+#include "GameFramework/PlayerState.h"
 #include "Interfaces/IHttpResponse.h"
+#include "Kismet/GameplayStatics.h"
 #include "DedicatedServers/GameplayTags/DedicatedServersTags.h"
 
 void UPortalManager::JoinGameSession()
@@ -50,8 +52,116 @@ void UPortalManager::FindOrCreateGameSession_Response(FHttpRequestPtr Request, F
 		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &GameSession);
 		GameSession.Dump();
 
+		const FString GameSessionId = GameSession.GameSessionId;
+		const FString GameSessionStatus = GameSession.Status;
+		HandleGameSessionStatus(GameSessionStatus, GameSessionId);
+		
 		BroadcastJoinGameSessionMessage.Broadcast(TEXT("Found Game Session."), false);
+	}
+	
+}
+
+
+FString UPortalManager::GetUniquePlayerId() const
+{
+	//{ Placeholder for player ID before user pools 
+	APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (IsValid(LocalPlayerController))
+	{
+		APlayerState* LocalPlayerState = LocalPlayerController->GetPlayerState<APlayerState>();			
+		if (IsValid(LocalPlayerState) && LocalPlayerState->GetUniqueId().IsValid())
+		{
+			const FString UniqueId = TEXT("Player_") + FString::FromInt(LocalPlayerState->GetUniqueID());
+			return UniqueId;
+		}
+	}
+	return FString();
+	//}
+}
+
+void UPortalManager::HandleGameSessionStatus(const FString& Status, const FString& SessionId)
+{
+	// If game session is active, try creating the player session
+	if (Status.Equals(TEXT("ACTIVE")))
+	{
+		BroadcastJoinGameSessionMessage.Broadcast(TEXT("Found active Game Session. Creating a Player Session..."), false);
+		TryCreatePlayerSession(GetUniquePlayerId(), SessionId);
+	}
+	// If activating, use timer to wait and try again from JoinGameSession(beginning)
+	else if (Status.Equals(TEXT("ACTIVATING")))
+	{
+		FTimerDelegate CreateSessionDelegate;
+		CreateSessionDelegate.BindUObject(this, &ThisClass::JoinGameSession);
+		APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
+		if (IsValid(LocalPlayerController))
+		{
+			LocalPlayerController->GetWorldTimerManager().SetTimer(CreateSessionTimer, CreateSessionDelegate, 0.5f, false);
+		}
+	}
+	else
+	{
+		BroadcastJoinGameSessionMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
 	}
 
 	
+}
+
+void UPortalManager::TryCreatePlayerSession(const FString& PlayerId, const FString& GameSessionId)
+{
+
+	check(APIData);
+	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::CreatePlayerSession_Response);
+	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::GameSessionsAPI::CreatePlayerSession);
+	Request->SetURL(APIUrl);
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	TMap<FString, FString> Params = {
+		{ TEXT("playerId"), PlayerId },
+		{ TEXT("gameSessionId"), GameSessionId }
+	};
+	const FString Content = SerializeJsonObject(Params);
+
+	Request->SetContentAsString(Content);
+	Request->ProcessRequest();
+	
+}
+
+void UPortalManager::CreatePlayerSession_Response(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Create Player Session Response Received");
+	if (!bWasSuccessful)
+	{
+		BroadcastJoinGameSessionMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+	}
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		if (ContainsErrors(JsonObject))
+		{
+			BroadcastJoinGameSessionMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+		}
+
+		FDSPlayerSession PlayerSession;
+		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &PlayerSession);
+		PlayerSession.Dump();
+		
+		APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
+		if (IsValid(LocalPlayerController))
+		{
+			FInputModeGameOnly InputModeData;
+			LocalPlayerController->SetInputMode(InputModeData);
+			LocalPlayerController->SetShowMouseCursor(false);
+		}
+
+		const FString IpAndPort = PlayerSession.IpAddress + TEXT(":") + FString::FromInt(PlayerSession.Port);
+		const FName Address(*IpAndPort);
+		UGameplayStatics::OpenLevel(this, Address);
+		
+		
+	}
 }

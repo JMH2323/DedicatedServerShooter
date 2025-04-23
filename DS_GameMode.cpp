@@ -106,7 +106,7 @@ void ADS_GameMode::InitGameLift()
 			if (Key.Equals(TEXT("port"), ESearchCase::IgnoreCase))
 			{
 				Port = FCString::Atoi(*Value);
-				return;
+				break;
 			}
 		}
 	}

@@ -25,7 +25,7 @@ void USignInOverlay::OnJoinGameButtonClicked()
 	check(IsValid(JoinGameWidget));
 	check(IsValid(JoinGameWidget->Button_JoinGame));
 	
-	PortalManager->BroadcastJoinGameSessionMessage.AddDynamic(this, &USignInOverlay::UpdateJoinGameStatusMessage, );
+	PortalManager->BroadcastJoinGameSessionMessage.AddDynamic(this, &USignInOverlay::UpdateJoinGameStatusMessage);
 	PortalManager->JoinGameSession();
 
 	JoinGameWidget->Button_JoinGame->SetIsEnabled(false);
