@@ -39,5 +39,16 @@ class DEDICATEDSERVERS_API USignUpPage : public UUserWidget
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> TextBlock_StatusMessage;
 
+protected:
+	virtual void NativeConstruct() override;
+
+private:
+
+	UFUNCTION()
+	void UpdateSignUpButtonState(const FText& Text);
+
+	bool IsValidEmail(const FString& Email);
+	bool IsStrongPassword(const FString& Password, FString& StatusMessage);
+
 	
 };
