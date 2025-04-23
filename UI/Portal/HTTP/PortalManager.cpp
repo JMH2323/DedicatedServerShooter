@@ -27,8 +27,32 @@ void UPortalManager::JoinGameSession()
 	
 }
 
+void UPortalManager::SignIn(const FString& Username, const FString& Password)
+{
+	
+}
+
+void UPortalManager::SignUp(const FString& Username, const FString& Password, const FString& Email)
+{
+	
+}
+
+void UPortalManager::Confirm(const FString& ConfirmationCode)
+{
+	
+}
+
+void UPortalManager::QuitGame()
+{
+	APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (IsValid(LocalPlayerController))
+	{
+		UKismetSystemLibrary::QuitGame(this, LocalPlayerController, EQuitPreference::Quit, false);
+	}
+}
+
 void UPortalManager::FindOrCreateGameSession_Response(FHttpRequestPtr Request, FHttpResponsePtr Response,
-	bool bWasSuccessful)
+                                                      bool bWasSuccessful)
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Find or Create Game Session Response Received");
 
