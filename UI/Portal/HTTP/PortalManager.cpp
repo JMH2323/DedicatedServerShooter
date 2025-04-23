@@ -46,17 +46,15 @@ void UPortalManager::FindOrCreateGameSession_Response(FHttpRequestPtr Request, F
 		{
 			BroadcastJoinGameSessionMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
 		}
-		DumpMetaData(JsonObject); // Could remove post-testing
+		//DumpMetaData(JsonObject); // Could remove post-testing
 
 		FDSGameSession GameSession;
 		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &GameSession);
-		GameSession.Dump();
+		//GameSession.Dump();
 
 		const FString GameSessionId = GameSession.GameSessionId;
 		const FString GameSessionStatus = GameSession.Status;
 		HandleGameSessionStatus(GameSessionStatus, GameSessionId);
-		
-		BroadcastJoinGameSessionMessage.Broadcast(TEXT("Found Game Session."), false);
 	}
 	
 }
@@ -71,8 +69,7 @@ FString UPortalManager::GetUniquePlayerId() const
 		APlayerState* LocalPlayerState = LocalPlayerController->GetPlayerState<APlayerState>();			
 		if (IsValid(LocalPlayerState) && LocalPlayerState->GetUniqueId().IsValid())
 		{
-			const FString UniqueId = TEXT("Player_") + FString::FromInt(LocalPlayerState->GetUniqueID());
-			return UniqueId;
+			return TEXT("Player_") + FString::FromInt(LocalPlayerState->GetUniqueID());			
 		}
 	}
 	return FString();
@@ -108,7 +105,6 @@ void UPortalManager::HandleGameSessionStatus(const FString& Status, const FStrin
 
 void UPortalManager::TryCreatePlayerSession(const FString& PlayerId, const FString& GameSessionId)
 {
-
 	check(APIData);
 	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
 	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::CreatePlayerSession_Response);
@@ -125,7 +121,6 @@ void UPortalManager::TryCreatePlayerSession(const FString& PlayerId, const FStri
 
 	Request->SetContentAsString(Content);
 	Request->ProcessRequest();
-	
 }
 
 void UPortalManager::CreatePlayerSession_Response(FHttpRequestPtr Request, FHttpResponsePtr Response,
@@ -160,8 +155,6 @@ void UPortalManager::CreatePlayerSession_Response(FHttpRequestPtr Request, FHttp
 
 		const FString IpAndPort = PlayerSession.IpAddress + TEXT(":") + FString::FromInt(PlayerSession.Port);
 		const FName Address(*IpAndPort);
-		UGameplayStatics::OpenLevel(this, Address);
-		
-		
+		UGameplayStatics::OpenLevel(this, Address);		
 	}
 }
