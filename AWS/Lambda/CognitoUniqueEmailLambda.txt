@@ -1,0 +1,23 @@
+import { CognitoIdentityProviderClient, ListUsersCommand } from "@aws-sdk/client-cognito-identity-provider";
+
+export const handler = async (event) => {
+  const email = event.request.userAttributes.email;
+
+  const cognitoIdentityProviderClient = new CognitoIdentityProviderClient( { region: process.env.REGION } );
+  const listUsersInput = {
+    UserPoolId: event.userPoolId,
+    Filter: `email = "${email}"`
+  };
+  const listUsersCommand = new ListUsersCommand(listUsersInput);
+
+  try {
+    const listUsersResponse = await cognitoIdentityProviderClient.send(listUsersCommand);
+    if (listUsersResponse.Users.length > 0) {
+      throw new Error("A user with this email aleady exists.");
+    }
+    return event;
+  } catch(error) {
+    console.error(error);
+    throw new Error(error.message);
+  }
+};
