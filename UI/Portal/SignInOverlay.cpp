@@ -15,15 +15,9 @@
 void USignInOverlay::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
 	check(PortalManagerClass);
-	check(IsValid(JoinGameWidget));
-	check(IsValid(JoinGameWidget->Button_JoinGame));
 	
 	PortalManager = NewObject<UPortalManager>(this, PortalManagerClass);
-
-	JoinGameWidget->Button_JoinGame->OnClicked.AddDynamic(this, &USignInOverlay::OnJoinGameButtonClicked);
-
 
 	// { TEST TODO: Remove
 	check(Button_SignIn_Test);
@@ -50,31 +44,6 @@ void USignInOverlay::NativeConstruct()
 	
 	SuccessConfirmedPage->Button_Ok->OnClicked.AddDynamic(this, &USignInOverlay::ShowSignInPage);
 	// }
-}
-
-void USignInOverlay::OnJoinGameButtonClicked()
-{
-	check(IsValid(PortalManager));
-	check(IsValid(JoinGameWidget));
-	check(IsValid(JoinGameWidget->Button_JoinGame));
-	
-	PortalManager->BroadcastJoinGameSessionMessage.AddDynamic(this, &USignInOverlay::UpdateJoinGameStatusMessage);
-	PortalManager->JoinGameSession();
-
-	JoinGameWidget->Button_JoinGame->SetIsEnabled(false);
-}
-
-void USignInOverlay::UpdateJoinGameStatusMessage(const FString& StatusMessage, bool bResetJoinGameButton)
-{
-	check(IsValid(JoinGameWidget));
-	check(IsValid(JoinGameWidget->Button_JoinGame));
-	JoinGameWidget->SetStatusMessage(StatusMessage);
-
-	if (bResetJoinGameButton)
-	{
-		JoinGameWidget->Button_JoinGame->SetIsEnabled(true);
-	}
-	
 }
 
 void USignInOverlay::ShowSignInPage()

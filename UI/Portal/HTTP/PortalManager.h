@@ -8,7 +8,6 @@
 #include "PortalManager.generated.h"
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBroadcastJoinGameSessionMessage, const FString&, StatusMessage, bool, bResetJoinGameButton);
 /**
  * 
  */
@@ -19,10 +18,7 @@ class DEDICATEDSERVERS_API UPortalManager : public UHTTPRequestManager
 
 public:
 
-	UPROPERTY(BlueprintAssignable)
-	FBroadcastJoinGameSessionMessage BroadcastJoinGameSessionMessage;
 	
-	void JoinGameSession();
 
 	//{ Registration / Sign in functions
 	void SignIn(const FString& Username, const FString& Password);
@@ -33,14 +29,4 @@ public:
 	UFUNCTION()
 	void QuitGame();
 	
-private:
-
-	void FindOrCreateGameSession_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-	void CreatePlayerSession_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-	
-	FString GetUniquePlayerId() const; //Placeholder
-	void HandleGameSessionStatus(const FString& Status, const FString& SessionId);
-	void TryCreatePlayerSession(const FString& PlayerId, const FString& GameSessionId);
-
-	FTimerHandle CreateSessionTimer;
 };
