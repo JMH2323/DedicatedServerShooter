@@ -12,6 +12,14 @@
 #include "DedicatedServers/UI/HTTP/HTTPRequestTypes.h"
 #include "Interfaces/IHttpResponse.h"
 
+void UPortalManager::QuitGame()
+{
+	APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (IsValid(LocalPlayerController))
+	{
+		UKismetSystemLibrary::QuitGame(this, LocalPlayerController, EQuitPreference::Quit, false);
+	}
+}
 
 void UPortalManager::SignIn(const FString& Username, const FString& Password)
 {
@@ -32,6 +40,34 @@ void UPortalManager::SignIn(const FString& Username, const FString& Password)
 	const FString Content = SerializeJsonObject(Params);
 	Request->SetContentAsString(Content);
 	Request->ProcessRequest();
+}
+
+void UPortalManager::SignIn_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (!bWasSuccessful)
+	{
+		SignInStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+	}
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		if (ContainsErrors(JsonObject))
+		{
+			SignInStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+			return;
+		}
+
+		FDSInitiateAuthResponse InitiateAuthResponse;
+		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &InitiateAuthResponse);
+		
+		UDSLocalPlayerSubsystem* LocalPlayerSubsystem = GetDSLocalPlayerSubsystem();
+		if (IsValid(LocalPlayerSubsystem))
+		{
+			LocalPlayerSubsystem->InitializeTokens(InitiateAuthResponse.AuthenticationResult, this);
+		}		
+	}	
 }
 
 void UPortalManager::SignUp(const FString& Username, const FString& Password, const FString& Email)
@@ -56,35 +92,6 @@ void UPortalManager::SignUp(const FString& Username, const FString& Password, co
 	Request->ProcessRequest();
 }
 
-void UPortalManager::Confirm(const FString& ConfirmationCode)
-{
-	check(APIData);
-	ConfirmStatusMessageDelegate.Broadcast(TEXT("Checking verification code..."), false);
-	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
-	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::Confirm_Response);
-	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::PortalAPI::ConfirmSignUp);
-	Request->SetURL(APIUrl);
-	Request->SetVerb(TEXT("PUT"));
-	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
-
-	TMap<FString, FString> Params = {
-		{ TEXT("username"), LastUsername },
-		{ TEXT("confirmationCode"), ConfirmationCode }
-	};
-	const FString Content = SerializeJsonObject(Params);
-	Request->SetContentAsString(Content);
-	Request->ProcessRequest();
-}
-
-void UPortalManager::QuitGame()
-{
-	APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
-	if (IsValid(LocalPlayerController))
-	{
-		UKismetSystemLibrary::QuitGame(this, LocalPlayerController, EQuitPreference::Quit, false);
-	}
-}
-
 void UPortalManager::SignUp_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if (!bWasSuccessful)
@@ -104,6 +111,26 @@ void UPortalManager::SignUp_Response(FHttpRequestPtr Request, FHttpResponsePtr R
 		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &LastSignUpResponse);
 		OnSignUpSucceeded.Broadcast();
 	}
+}
+
+void UPortalManager::Confirm(const FString& ConfirmationCode)
+{
+	check(APIData);
+	ConfirmStatusMessageDelegate.Broadcast(TEXT("Checking verification code..."), false);
+	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::Confirm_Response);
+	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::PortalAPI::ConfirmSignUp);
+	Request->SetURL(APIUrl);
+	Request->SetVerb(TEXT("PUT"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	TMap<FString, FString> Params = {
+		{ TEXT("username"), LastUsername },
+		{ TEXT("confirmationCode"), ConfirmationCode }
+	};
+	const FString Content = SerializeJsonObject(Params);
+	Request->SetContentAsString(Content);
+	Request->ProcessRequest();
 }
 
 void UPortalManager::Confirm_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
@@ -136,30 +163,44 @@ void UPortalManager::Confirm_Response(FHttpRequestPtr Request, FHttpResponsePtr 
 	OnConfirmSucceeded.Broadcast();
 }
 
-void UPortalManager::SignIn_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void UPortalManager::RefreshTokens(const FString& RefreshToken)
 {
-	if (!bWasSuccessful)
-	{
-		SignInStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
-	}
+	check(APIData);
+	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::RefreshTokens_Response);
+	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::PortalAPI::SignIn);
+	Request->SetURL(APIUrl);
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+	
+	TMap<FString, FString> Params = {
+		{ TEXT("refreshToken"), RefreshToken }
+	};
+	const FString Content = SerializeJsonObject(Params);
+	Request->SetContentAsString(Content);
+	Request->ProcessRequest();
+}
+
+void UPortalManager::RefreshTokens_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (!bWasSuccessful) return;
 
 	TSharedPtr<FJsonObject> JsonObject;
 	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 	{
-		if (ContainsErrors(JsonObject))
-		{
-			SignInStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
-			return;
-		}
+		if (ContainsErrors(JsonObject)) return;
 
 		FDSInitiateAuthResponse InitiateAuthResponse;
 		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &InitiateAuthResponse);
-		
+
 		UDSLocalPlayerSubsystem* LocalPlayerSubsystem = GetDSLocalPlayerSubsystem();
 		if (IsValid(LocalPlayerSubsystem))
 		{
-			LocalPlayerSubsystem->InitializeTokens(InitiateAuthResponse.AuthenticationResult, this);
-		}		
-	}	
+			LocalPlayerSubsystem->UpdateTokens(
+				InitiateAuthResponse.AuthenticationResult.AccessToken,
+				InitiateAuthResponse.AuthenticationResult.IdToken
+				);
+		}
+	}
 }
