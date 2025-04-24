@@ -7,7 +7,6 @@
 #include "DedicatedServers/UI/HTTP/HTTPRequestManager.h"
 #include "GameSessionsManager.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBroadcastJoinGameSessionMessage, const FString&, StatusMessage, bool, bResetJoinGameButton);
 
 /**
  * 

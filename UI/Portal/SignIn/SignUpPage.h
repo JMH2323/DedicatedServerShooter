@@ -39,6 +39,11 @@ class DEDICATEDSERVERS_API USignUpPage : public UUserWidget
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> TextBlock_StatusMessage;
 
+	UFUNCTION()
+	void UpdateStatusMessage(const FString& Message, bool bShouldResetWidgets);
+
+	void ClearTextBoxes();
+
 protected:
 	virtual void NativeConstruct() override;
 

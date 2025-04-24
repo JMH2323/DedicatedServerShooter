@@ -6,6 +6,10 @@
 #include "UObject/Object.h"
 #include "HTTPRequestManager.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAPIStatusMessage, const FString&, StatusMessage, bool, bShouldResetWidgets);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBroadcastJoinGameSessionMessage, const FString&, StatusMessage, bool, bResetJoinGameButton);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAPIRequestSucceeded);
+
 class UAPIData;
 class FJsonObject;
 /**

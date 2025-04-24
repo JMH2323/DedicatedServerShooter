@@ -6,6 +6,23 @@
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 
+void USignUpPage::UpdateStatusMessage(const FString& Message, bool bShouldResetWidgets)
+{
+	TextBlock_StatusMessage->SetText(FText::FromString(Message));
+	if (bShouldResetWidgets)
+	{
+		Button_SignUp->SetIsEnabled(true);
+	}
+}
+
+void USignUpPage::ClearTextBoxes()
+{
+	TextBox_UserName->SetText(FText::GetEmpty());
+	TextBox_Password->SetText(FText::GetEmpty());
+	TextBox_ConfirmPassword->SetText(FText::GetEmpty());
+	TextBox_Email->SetText(FText::GetEmpty());
+}
+
 void USignUpPage::NativeConstruct()
 {
 	Super::NativeConstruct();
