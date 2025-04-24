@@ -12,6 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAPIRequestSucceeded);
 
 class UAPIData;
 class FJsonObject;
+class UDSLocalPlayerSubsystem;
 /**
  * 
  */
@@ -20,6 +21,10 @@ class DEDICATEDSERVERS_API UHTTPRequestManager : public UObject
 {
 	GENERATED_BODY()
 
+public:
+	UDSLocalPlayerSubsystem* GetDSLocalPlayerSubsystem() const;
+
+	
 protected:
 
 	UPROPERTY(EditDefaultsOnly)
@@ -28,4 +33,7 @@ protected:
 	bool ContainsErrors(TSharedPtr<FJsonObject> JsonObject);
 	void DumpMetaData(TSharedPtr<FJsonObject> JsonObject);
 	FString SerializeJsonObject(const TMap<FString, FString>& Params);
+
+	
+	
 };
