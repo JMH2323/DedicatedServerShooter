@@ -14,7 +14,23 @@
 
 void UPortalManager::SignIn(const FString& Username, const FString& Password)
 {
-	
+	SignInStatusMessageDelegate.Broadcast(TEXT("Signing in..."), false);
+	check(APIData);
+	TSharedRef<IHttpRequest> Request = FHttpModule::Get().CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &UPortalManager::SignIn_Response);
+	const FString APIUrl = APIData->GetAPIEndpoint(DedicatedServersTags::PortalAPI::SignIn);
+	Request->SetURL(APIUrl);
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+
+	LastUsername = Username;
+	TMap<FString, FString> Params = {
+		{ TEXT("username"), Username },
+		{ TEXT("password"), Password }
+	};
+	const FString Content = SerializeJsonObject(Params);
+	Request->SetContentAsString(Content);
+	Request->ProcessRequest();
 }
 
 void UPortalManager::SignUp(const FString& Username, const FString& Password, const FString& Email)
@@ -117,4 +133,29 @@ void UPortalManager::Confirm_Response(FHttpRequestPtr Request, FHttpResponsePtr 
 		}
 	}
 	OnConfirmSucceeded.Broadcast();
+}
+
+void UPortalManager::SignIn_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (!bWasSuccessful)
+	{
+		SignInStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+	}
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		if (ContainsErrors(JsonObject))
+		{
+			SignInStatusMessageDelegate.Broadcast(HTTPStatusMessages::SomethingWentWrong, true);
+			return;
+		}
+
+		FDSInitiateAuthResponse InitiateAuthResponse;
+		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &InitiateAuthResponse);
+		InitiateAuthResponse.Dump();
+		
+	}
+	
 }

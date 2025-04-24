@@ -22,3 +22,29 @@ void UConfirmSignUpPage::UpdateStatusMessage(const FString& Message, bool bShoul
 		Button_Confirm->SetIsEnabled(true);
 	}
 }
+
+void UConfirmSignUpPage::NativeConstruct()
+{
+	Super::NativeConstruct();
+	
+	TextBox_ConfirmationCode->OnTextChanged.AddDynamic(this, &UConfirmSignUpPage::UpdateConfirmButtonState);
+	Button_Confirm->SetIsEnabled(false);
+}
+
+void UConfirmSignUpPage::UpdateConfirmButtonState(const FText& Text)
+{
+	const FRegexPattern SixDigitsPattern(TEXT(R"(^\d{6}$)"));
+	FRegexMatcher Matcher(SixDigitsPattern, Text.ToString());
+
+	const bool bValidConfirmationCode = Matcher.FindNext();
+
+	Button_Confirm->SetIsEnabled(bValidConfirmationCode);
+	if (bValidConfirmationCode)
+	{
+		TextBlock_StatusMessage->SetText(FText::FromString(""));
+	}
+	else
+	{
+		TextBlock_StatusMessage->SetText(FText::FromString("Please enter six numerical digits."));
+	}
+}
