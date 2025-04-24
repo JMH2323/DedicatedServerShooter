@@ -6,6 +6,7 @@
 #include "DedicatedServers/UI/HTTP/HTTPRequestManager.h"
 #include "DedicatedServers/UI/HTTP/HTTPRequestTypes.h"
 #include "Interfaces/IHttpRequest.h"
+#include "DedicatedServers/UI/Portal/Interfaces/PortalManagement.h"
 #include "PortalManager.generated.h"
 
 
@@ -13,11 +14,18 @@
  * 
  */
 UCLASS()
-class DEDICATEDSERVERS_API UPortalManager : public UHTTPRequestManager
+class DEDICATEDSERVERS_API UPortalManager : public UHTTPRequestManager, public IPortalManagement
 {
 	GENERATED_BODY()
 
 public:
+
+	FDSSignUpResponse LastSignUpResponse;
+	FString LastUsername;
+
+	//{ PortalManagement Interface
+	virtual void RefreshTokens(const FString& RefreshToken) override;
+	// }
 
 	UPROPERTY(BlueprintAssignable)
 	FAPIStatusMessage SignUpStatusMessageDelegate;
@@ -38,14 +46,12 @@ public:
 	void SignIn(const FString& Username, const FString& Password);
 	void SignUp(const FString& Username, const FString& Password, const FString& Email);
 	void Confirm(const FString& ConfirmationCode);
-	void RefreshTokens(const FString& RefreshToken);
 	//}
 
 	UFUNCTION()
 	void QuitGame();
 
-	FDSSignUpResponse LastSignUpResponse;
-	FString LastUsername;
+	
 
 private:
 
