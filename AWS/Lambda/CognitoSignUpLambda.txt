@@ -1,0 +1,30 @@
+import { CognitoIdentityProviderClient, SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
+
+export const handler = async (event) => {
+  const cognitoIdentityProviderClient = new CognitoIdentityProviderClient({ region: process.env.REGION });
+
+  const clientId = process.env.CLIENT_ID;
+  const { username, password, email } = event; 
+
+  const signUpInput = {
+    ClientId: clientId,
+    Username: username,
+    Password: password,
+    UserAttributes: [
+      {
+        Name: "email",
+        Value: email
+      }
+    ]
+  };
+
+  try {
+    const signUpCommand = new SignUpCommand(signUpInput);
+    const response = await cognitoIdentityProviderClient.send(signUpCommand);
+    return response;
+  } catch(error) {
+    return error;
+  }
+  
+
+};
