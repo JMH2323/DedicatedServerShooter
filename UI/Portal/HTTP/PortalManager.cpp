@@ -10,6 +10,7 @@
 #include "DedicatedServers/GameplayTags/DedicatedServersTags.h"
 #include "DedicatedServers/Player/DSLocalPlayerSubsystem.h"
 #include "DedicatedServers/UI/HTTP/HTTPRequestTypes.h"
+#include "DedicatedServers/UI/Portal/PortalHUD.h"
 #include "Interfaces/IHttpResponse.h"
 
 void UPortalManager::QuitGame()
@@ -66,7 +67,18 @@ void UPortalManager::SignIn_Response(FHttpRequestPtr Request, FHttpResponsePtr R
 		if (IsValid(LocalPlayerSubsystem))
 		{
 			LocalPlayerSubsystem->InitializeTokens(InitiateAuthResponse.AuthenticationResult, this);
-		}		
+		}
+
+		// After sign in, Get the HUD of the player and call OnSignIn() which sends them to the dashboard
+		APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
+		if (IsValid(LocalPlayerController))
+		{
+			APortalHUD* PortalHUD = Cast<APortalHUD>( LocalPlayerController->GetHUD());
+			if (IsValid(PortalHUD))
+			{
+				PortalHUD->OnSignIn();
+			}
+		}
 	}	
 }
 
