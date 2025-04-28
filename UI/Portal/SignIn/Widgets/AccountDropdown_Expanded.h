@@ -10,6 +10,7 @@
 class UButton;
 class UTextBlock;
 class UPortalManager;
+class UDSLocalPlayerSubsystem;
 /**
  * 
  */
@@ -25,6 +26,11 @@ public:
 	
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> TextBlock_SignOutButtonText;
+
+	// TODO: (For real this time) Add Other data like Username, Stats
+	// TODO: Stats might take longer.
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> TextBlock_Email;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSlateColor HoveredTextColor;
