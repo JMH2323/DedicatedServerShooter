@@ -10,13 +10,11 @@ namespace DedicatedServersTags
 		UE_DEFINE_GAMEPLAY_TAG(CreatePlayerSession, "DedicatedServersTags.GameSessionsAPI.CreatePlayerSession")
 
 	}
-
 	namespace PortalAPI
 	{
 		UE_DEFINE_GAMEPLAY_TAG(SignUp, "DedicatedServersTags.PortalAPI.SignUp")
 		UE_DEFINE_GAMEPLAY_TAG(ConfirmSignUp, "DedicatedServersTags.PortalAPI.ConfirmSignUp")
 		UE_DEFINE_GAMEPLAY_TAG(SignIn, "DedicatedServersTags.PortalAPI.SignIn")
+		UE_DEFINE_GAMEPLAY_TAG(SignOut, "DedicatedServersTags.PortalAPI.SignOut")
 	}
-	
 }
-
