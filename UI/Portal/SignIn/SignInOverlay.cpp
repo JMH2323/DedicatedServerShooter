@@ -5,13 +5,13 @@
 #include "DedicatedServers/UI/API/GameSessions/JoinGame.h"
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
-#include "DedicatedServers/UI/Portal/SignIn/SignInPage.h"
-#include "DedicatedServers/UI/Portal/SignIn/SignUpPage.h"
-#include "DedicatedServers/UI/Portal/SignIn/ConfirmSignUpPage.h"
-#include "DedicatedServers/UI/Portal/SignIn/SuccessConfirmedPage.h"
+#include "DedicatedServers/UI/Portal/SignIn/Widgets/SignInPage.h"
+#include "DedicatedServers/UI/Portal/SignIn/Widgets/SignUpPage.h"
+#include "DedicatedServers/UI/Portal/SignIn/Widgets/ConfirmSignUpPage.h"
+#include "DedicatedServers/UI/Portal/SignIn/Widgets/SuccessConfirmedPage.h"
 #include "Components/TextBlock.h"
 #include "Components/EditableTextBox.h"
-#include "HTTP/PortalManager.h"
+#include "../HTTP/PortalManager.h"
 
 void USignInOverlay::NativeConstruct()
 {
