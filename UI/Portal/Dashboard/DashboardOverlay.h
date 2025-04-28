@@ -42,5 +42,20 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> LeaderButton;
+
+protected:
+	virtual void NativeConstruct() override;
+
+private:
+	
+	UFUNCTION()
+	void ShowGamePage();
+	
+	UFUNCTION()
+	void ShowCareerPage();
+
+	UFUNCTION()
+	void ShowLeaderboardPage();
+
 	
 };
