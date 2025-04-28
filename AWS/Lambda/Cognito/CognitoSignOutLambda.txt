@@ -1,0 +1,15 @@
+import { CognitoIdentityProviderClient, GlobalSignOutCommand } from "@aws-sdk/client-cognito-identity-provider";
+
+export const handler = async (event) => {
+  const cognitoIdentityProviderClient = new CognitoIdentityProviderClient( { region: process.env.REGION } );
+  const input = {
+    AccessToken: event.accessToken
+  };
+  try {
+    const globalSignOutCommand = new GlobalSignOutCommand(input);
+    const globalSignOutResponse = await cognitoIdentityProviderClient.send(globalSignOutCommand);
+    return globalSignOutResponse;
+  } catch(error) {
+    return error;
+  }
+};
