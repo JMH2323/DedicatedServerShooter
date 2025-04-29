@@ -4,14 +4,14 @@
 #include "PortalManager.h"
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
-#include "Components/SlateWrapperTypes.h"
 #include "DedicatedServers/Data/API/APIData.h"
 #include "DedicatedServers/UI/HTTP/HTTPRequestManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "DedicatedServers/GameplayTags/DedicatedServersTags.h"
 #include "DedicatedServers/Player/DSLocalPlayerSubsystem.h"
 #include "DedicatedServers/UI/HTTP/HTTPRequestTypes.h"
-#include "DedicatedServers/UI/Portal/PortalHUD.h"
+#include "DedicatedServers/UI/Portal/Interfaces/HUDManagement.h"
+#include "GameFramework/HUD.h"
 #include "Interfaces/IHttpResponse.h"
 
 void UPortalManager::QuitGame()
@@ -77,10 +77,9 @@ void UPortalManager::SignIn_Response(FHttpRequestPtr Request, FHttpResponsePtr R
 		APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
 		if (IsValid(LocalPlayerController))
 		{
-			APortalHUD* PortalHUD = Cast<APortalHUD>( LocalPlayerController->GetHUD());
-			if (IsValid(PortalHUD))
+			if (IHUDManagement* HUDManagementInterface = Cast<IHUDManagement>(LocalPlayerController->GetHUD()))
 			{
-				PortalHUD->OnSignIn();
+				HUDManagementInterface->OnSignIn();
 			}
 		}
 	}	
@@ -255,6 +254,14 @@ void UPortalManager::Signout_Response(FHttpRequestPtr Request, FHttpResponsePtr 
 		{
 			return;
 		}
-		// TODO: On Sign Out
+		
+		APlayerController* LocalPlayerController = GEngine->GetFirstLocalPlayerController(GetWorld());
+		if (IsValid(LocalPlayerController))
+		{
+			if (IHUDManagement* HUDManagementInterface = Cast<IHUDManagement>(LocalPlayerController))
+			{
+				HUDManagementInterface->OnSignOut();
+			}
+		}
 	}
 }
