@@ -1,9 +1,9 @@
-import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityProviderClient, GetUserCommand, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 
 export const handler = async (event) => {
   const cognitoIdentityProviderClient = new CognitoIdentityProviderClient( { region: process.env.REGION } );
 
-  const { username, password } = event;
+  const { username, password, refreshToken } = event;
 
   if (refreshToken){
     const refreshTokensInput = {
@@ -35,7 +35,30 @@ export const handler = async (event) => {
     const initiateAuthCommand = new InitiateAuthCommand(initiateAuthInput);
     try {
       const initiateAuthResponse = await cognitoIdentityProviderClient.send(initiateAuthCommand);
-      return initiateAuthResponse;
+
+      // After we have the Auth response, get the user info to return Email to Unreal
+      const getUserInput = {
+        AccessToken: initiateAuthResponse.AuthenticationResult.AccessToken
+      };
+
+      const getUserCommand = new GetUserCommand(getUserInput);
+      const getUserResponse = await cognitoIdentityProviderClient.send(getUserCommand);
+
+      let emailAttribute;
+      for (const attribute of getUserResponse.UserAttributes) {
+        if (attribute.Name === "email") {
+          emailAttribute = attribute;
+          break;
+        }
+      }
+
+      const response = {
+        ...initiateAuthResponse,
+        email: emailAttribute.Value,
+      };
+
+      return response;
+
     } catch(error) {
       return error;
     }

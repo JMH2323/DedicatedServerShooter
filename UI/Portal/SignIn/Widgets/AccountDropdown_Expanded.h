@@ -59,5 +59,7 @@ private:
 	TObjectPtr<UPortalManager> PortalManager;
 
 	void SetSignOutButtonStyleTransparent();
+
+	UDSLocalPlayerSubsystem* GetLocalPlayerSubsystem();
 	
 };

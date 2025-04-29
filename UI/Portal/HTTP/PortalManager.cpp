@@ -4,6 +4,7 @@
 #include "PortalManager.h"
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
+#include "Components/SlateWrapperTypes.h"
 #include "DedicatedServers/Data/API/APIData.h"
 #include "DedicatedServers/UI/HTTP/HTTPRequestManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -61,12 +62,15 @@ void UPortalManager::SignIn_Response(FHttpRequestPtr Request, FHttpResponsePtr R
 		}
 
 		FDSInitiateAuthResponse InitiateAuthResponse;
+		UE_LOG(LogTemp, Warning, TEXT("Lambda response: %s"), *Response->GetContentAsString());
 		FJsonObjectConverter::JsonObjectToUStruct(JsonObject.ToSharedRef(), &InitiateAuthResponse);
 		
 		UDSLocalPlayerSubsystem* LocalPlayerSubsystem = GetDSLocalPlayerSubsystem();
 		if (IsValid(LocalPlayerSubsystem))
 		{
 			LocalPlayerSubsystem->InitializeTokens(InitiateAuthResponse.AuthenticationResult, this);
+			LocalPlayerSubsystem->Username = LastUsername;
+			LocalPlayerSubsystem->Email = InitiateAuthResponse.email;
 		}
 
 		// After sign in, Get the HUD of the player and call OnSignIn() which sends them to the dashboard
