@@ -1,0 +1,49 @@
+
+
+// Player controller header:
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuitMenuOpen, bool, bOpen);
+
+
+
+	UPROPERTY(BlueprintAssignable)
+	FOnQuitMenuOpen OnQuitMenuOpen;
+
+
+	UPROPERTY(EditAnywhere, Category="Input")
+	TObjectPtr<UInputAction> QuitAction;
+
+
+	void Input_Quit();
+	bool bQuitMenuOpen;
+
+
+// Player controller cpp:
+
+
+init()
+{
+bQuitMenuOpen = false;
+}
+
+
+ShooterInputComponent->BindAction(QuitAction, ETriggerEvent::Started, this, &AShooterPlayerController::Input_Quit);
+
+void AShooterPlayerController::Input_Quit()
+{
+	bQuitMenuOpen = !bQuitMenuOpen;
+	if (bQuitMenuOpen)
+	{
+		FInputModeGameAndUI InputMode;
+		SetInputMode(InputMode);
+		SetShowMouseCursor(true);
+		OnQuitMenuOpen.Broadcast(true);
+	}
+	else
+	{
+		FInputModeGameOnly InputMode;
+		SetInputMode(InputMode);
+		SetShowMouseCursor(false);
+		OnQuitMenuOpen.Broadcast(false);
+	}
+}
