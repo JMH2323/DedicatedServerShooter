@@ -27,15 +27,7 @@ void ADS_GameModeBase::StartCountdownTimer(FCountdownTimerHandle& CountdownTimer
 	// Client Timer is updated by the Update Timer
 	CountdownTimerHandle.TimerUpdateDelegate.BindWeakLambda(this,[&]()
 	{
-		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-		{
-			ADSPlayerController* DSPlayerController = Cast<ADSPlayerController>(Iterator->Get());
-			if (IsValid(DSPlayerController))
-			{
-				const float CountdownTimeLeft = CountdownTimerHandle.CountdownTime - GetWorldTimerManager().GetTimerElapsed(CountdownTimerHandle.TimerFinishedHandle);
-				DSPlayerController->Client_TimerUpdated(CountdownTimeLeft, CountdownTimerHandle.Type);
-			}
-		}
+		UpdateCountdownTimer(CountdownTimerHandle);
 	});
 
 	// Start Update Timer (Goes off every second, updating the client timers)
@@ -44,6 +36,9 @@ void ADS_GameModeBase::StartCountdownTimer(FCountdownTimerHandle& CountdownTimer
 		CountdownTimerHandle.TimerUpdateDelegate,
 		CountdownTimerHandle.CountdownUpdateInterval,
 		true);
+
+	// Updates Once Instantly to show timer (not hidden)
+	UpdateCountdownTimer(CountdownTimerHandle);
 	
 }
 
@@ -76,4 +71,18 @@ void ADS_GameModeBase::StopCountdownTimer(FCountdownTimerHandle& CountdownTimerH
 void ADS_GameModeBase::OnCountdownTimerFinished(ECountdownTimerType Type)
 {
 	// Designed to overwrite on child classes when Timer finished
+}
+
+
+void ADS_GameModeBase::UpdateCountdownTimer(const FCountdownTimerHandle& CountdownTimerHandle)
+{
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		ADSPlayerController* DSPlayerController = Cast<ADSPlayerController>(Iterator->Get());
+		if (IsValid(DSPlayerController))
+		{
+			const float CountdownTimeLeft = CountdownTimerHandle.CountdownTime - GetWorldTimerManager().GetTimerElapsed(CountdownTimerHandle.TimerFinishedHandle);
+			DSPlayerController->Client_TimerUpdated(CountdownTimeLeft, CountdownTimerHandle.Type);
+		}
+	}
 }

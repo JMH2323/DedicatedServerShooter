@@ -31,7 +31,7 @@ struct FCountdownTimerHandle
 	UPROPERTY(BlueprintReadWrite)
 	ECountdownTimerState State = ECountdownTimerState::NotStarted;
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	ECountdownTimerType Type = ECountdownTimerType::None;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -51,3 +51,13 @@ inline bool operator==(const FCountdownTimerHandle& lhs, const FCountdownTimerHa
 {
 	return lhs.Type == rhs.Type;
 }
+
+UENUM()
+enum class EMatchStatus : uint8
+{
+	WaitingForPlayers,
+	PreMatch,
+	Match,
+	PostMatch,
+	SeamlessTravelling
+};
