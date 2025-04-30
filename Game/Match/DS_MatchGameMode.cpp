@@ -33,6 +33,17 @@ void ADS_MatchGameMode::Logout(AController* Exiting)
 	RemovePlayerSession(Exiting);	
 }
 
+void ADS_MatchGameMode::InitSeamlessTravelPlayer(AController* NewController)
+{
+	Super::InitSeamlessTravelPlayer(NewController);
+
+	if (MatchStatus == EMatchStatus::WaitingForPlayers)
+	{
+		MatchStatus = EMatchStatus::PreMatch;
+		StartCountdownTimer(PreMatchTimer);
+	}
+}
+
 void ADS_MatchGameMode::OnCountdownTimerFinished(ECountdownTimerType Type)
 {
 	Super::OnCountdownTimerFinished(Type);

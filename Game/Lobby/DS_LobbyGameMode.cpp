@@ -143,6 +143,7 @@ void ADS_LobbyGameMode::OnCountdownTimerFinished(ECountdownTimerType Type)
 
 	if (Type == ECountdownTimerType::LobbyCountdown)
 	{
+		StopCountdownTimer(LobbyCountdownTimer);
 		LobbyStatus = ELobbyStatus::SeamlessTravelling;
 		TrySeamlessTravel(MapToTravelTo);
 	}
