@@ -8,6 +8,19 @@ ADSPlayerController::ADSPlayerController()
 	SingleTripTime = 0.f;
 }
 
+
+void ADSPlayerController::Client_SetInputEnabled_Implementation(bool bEnabled)
+{
+	if (bEnabled)
+	{
+		EnableInput(this);
+	}
+	else
+	{
+		DisableInput(this);
+	}
+}
+
 void ADSPlayerController::Client_TimerUpdated_Implementation(float CountdownTimeLeft, ECountdownTimerType Type) const
 {
 	OnTimerUpdated.Broadcast(CountdownTimeLeft - SingleTripTime, Type);

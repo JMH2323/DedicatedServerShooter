@@ -27,6 +27,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_TimerStopped(float CountdownTimeLeft, ECountdownTimerType Type) const;
 
+	UFUNCTION(Client, Reliable)
+	void Client_SetInputEnabled(bool bEnabled);
+
 	UPROPERTY(BlueprintAssignable)
 	FOnTimerStateChangedDelegate OnTimerUpdated;
 

@@ -38,6 +38,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> LobbyMap;
 
+	void SetClientInputEnabled(bool bEnabled);
+
 	
 
 	
