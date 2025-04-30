@@ -4,6 +4,7 @@
 #include "DS_GameModeBase.h"
 
 #include "DedicatedServers/Player/DSPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 void ADS_GameModeBase::StartCountdownTimer(FCountdownTimerHandle& CountdownTimerHandle)
 {
@@ -71,6 +72,20 @@ void ADS_GameModeBase::StopCountdownTimer(FCountdownTimerHandle& CountdownTimerH
 void ADS_GameModeBase::OnCountdownTimerFinished(ECountdownTimerType Type)
 {
 	// Designed to overwrite on child classes when Timer finished
+}
+
+void ADS_GameModeBase::TrySeamlessTravel(TSoftObjectPtr<UWorld> DestinationMap)
+{
+	const FString MapName = DestinationMap.ToSoftObjectPath().GetAssetName();
+	// Server travel only works in package, Editor alternative
+	if (GIsEditor)
+	{
+		UGameplayStatics::OpenLevelBySoftObjectPtr(this, DestinationMap);
+	}
+	else
+	{
+		GetWorld()->ServerTravel(MapName);
+	}
 }
 
 
