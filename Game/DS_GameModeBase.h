@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "DedicatedServers/Types/DSTypes.h"
+#include "GameLiftServerSDK.h"
 #include "DS_GameModeBase.generated.h"
 
 /**
@@ -22,5 +23,6 @@ protected:
 	void UpdateCountdownTimer(const FCountdownTimerHandle& CountdownTimerHandle);
 	virtual void OnCountdownTimerFinished(ECountdownTimerType Type);
 	void TrySeamlessTravel(TSoftObjectPtr<UWorld> DestinationMap);
+	void RemovePlayerSession(AController* Exiting);
 
 };
