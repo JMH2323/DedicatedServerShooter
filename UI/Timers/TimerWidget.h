@@ -49,6 +49,9 @@ protected:
 	UFUNCTION()
 	virtual void OnTimerStopped(float CountdownTimeLeft, ECountdownTimerType Type);
 
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Timer Started"))
+	void K2_OnTimerStarted(float Time, ECountdownTimerType Type);
+
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "On Timer Updated"))
 	void K2_OnTimerUpdated(float Time, ECountdownTimerType Type);
 
