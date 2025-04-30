@@ -4,6 +4,45 @@
 #include "DS_LobbyGameMode.h"
 #include "DedicatedServers/Game/Instance/DS_GameInstanceSubsystem.h"
 #include "DedicatedServers/DedicatedServers.h"
+#include "Kismet/GameplayStatics.h"
+
+
+ADS_LobbyGameMode::ADS_LobbyGameMode()
+{
+	bUseSeamlessTravel = true;
+	LobbyStatus = ELobbyStatus::WaitingForPlayers;
+	MinPlayers = 1; // TODO: Change Minimum Players post-testing
+	LobbyCountdownTimer.Type = ECountdownTimerType::LobbyCountdown;
+}
+
+void ADS_LobbyGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	// Hard Travel
+	Super::PostLogin(NewPlayer);
+	if (GetNumPlayers() >= MinPlayers && LobbyStatus == ELobbyStatus::WaitingForPlayers)
+	{
+		LobbyStatus = ELobbyStatus::CountdownToSeamlessTravel;
+		StartCountdownTimer(LobbyCountdownTimer);
+	}
+}
+
+void ADS_LobbyGameMode::InitSeamlessTravelPlayer(AController* NewController)
+{
+	// Seamless Travel
+	Super::InitSeamlessTravelPlayer(NewController);	
+	if (GetNumPlayers() >= MinPlayers && LobbyStatus == ELobbyStatus::WaitingForPlayers)
+	{
+		LobbyStatus = ELobbyStatus::CountdownToSeamlessTravel;
+		StartCountdownTimer(LobbyCountdownTimer);
+	}
+}
+
+void ADS_LobbyGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+	CheckAndCancelCountdown();
+}
+
 
 
 void ADS_LobbyGameMode::BeginPlay()
@@ -12,6 +51,38 @@ void ADS_LobbyGameMode::BeginPlay()
 
 	InitGameLift();
 }
+
+void ADS_LobbyGameMode::OnCountdownTimerFinished(ECountdownTimerType Type)
+{
+	Super::OnCountdownTimerFinished(Type);
+
+	if (Type == ECountdownTimerType::LobbyCountdown)
+	{
+		LobbyStatus = ELobbyStatus::SeamlessTravelling;
+		const FString MapName = MapToTravelTo.ToSoftObjectPath().GetAssetName();
+
+		// Server travel only works in package, Editor alternative
+		if (GIsEditor)
+		{
+			UGameplayStatics::OpenLevelBySoftObjectPtr(this, MapToTravelTo);
+		}
+		else
+		{
+			GetWorld()->ServerTravel(MapName);
+		}
+	}
+	
+}
+
+void ADS_LobbyGameMode::CheckAndCancelCountdown()
+{
+	if (GetNumPlayers() - 1 < MinPlayers && LobbyStatus == ELobbyStatus::CountdownToSeamlessTravel)
+	{
+		LobbyStatus = ELobbyStatus::WaitingForPlayers;
+		StopCountdownTimer(LobbyCountdownTimer);
+	}
+}
+
 
 void ADS_LobbyGameMode::InitGameLift()
 {
