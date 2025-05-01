@@ -1,0 +1,30 @@
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+
+export const handler = async (event) => {
+  
+  console.log(JSON.stringify(event));
+
+  if (event.triggerSource === 'PostConfirmation_ConfirmSignUp') {
+    const dynamoDBClient = new DynamoDBClient( { region: process.env.REGION } );
+    const username = event.userName;
+    const cognitosub = event.request.userAttributes.sub;
+    const email = event.request.userAttributes.email;
+
+    const putItemInput = {
+      TableName: "Players",
+      Item: {
+        "databaseid": { S: cognitosub },
+        "username": { S: username },
+        "email": { S: email },
+      }
+    };
+
+    const putItemCommand = new PutItemCommand(putItemInput);
+    try {
+      const putItemResponse = await dynamoDBClient.send(putItemCommand);
+    } catch(error) {
+      return error;
+    }
+  }
+  return event;
+};
