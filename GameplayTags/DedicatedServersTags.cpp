@@ -17,4 +17,10 @@ namespace DedicatedServersTags
 		UE_DEFINE_GAMEPLAY_TAG(SignIn, "DedicatedServersTags.PortalAPI.SignIn")
 		UE_DEFINE_GAMEPLAY_TAG(SignOut, "DedicatedServersTags.PortalAPI.SignOut")
 	}
+	
+	namespace GameStatsAPI
+	{
+		UE_DEFINE_GAMEPLAY_TAG(RecordMatchStats, "DedicatedServersTags.GameStatsAPI.RecordMatchStats")		
+	}
+	
 }
