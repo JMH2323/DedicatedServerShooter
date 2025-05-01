@@ -5,6 +5,9 @@
 #include "DedicatedServers/Game/Instance/DS_GameInstanceSubsystem.h"
 #include "DedicatedServers/DedicatedServers.h"
 #include "DedicatedServers/Player/DSPlayerController.h"
+#include "LobbyState.h"
+#include "LobbyPlayerInfo.h"
+#include "DedicatedServers/Game/DS_GameState.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -36,16 +39,24 @@ void ADS_LobbyGameMode::InitSeamlessTravelPlayer(AController* NewController)
 		LobbyStatus = ELobbyStatus::CountdownToSeamlessTravel;
 		StartCountdownTimer(LobbyCountdownTimer);
 	}
+	if (LobbyStatus != ELobbyStatus::SeamlessTravelling)
+	{
+		AddPlayerInfoToLobbyState(NewController);
+	}
 }
 
 void ADS_LobbyGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
+	
 	CheckAndCancelCountdown();
-
 	// From Game Mode Base
 	RemovePlayerSession(Exiting);
-	
+
+	if (LobbyStatus != ELobbyStatus::SeamlessTravelling)
+	{
+		RemovePlayerInfoFromLobbyState(Exiting);
+	}
 }
 
 void ADS_LobbyGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
@@ -73,6 +84,10 @@ FString ADS_LobbyGameMode::InitNewPlayer(APlayerController* NewPlayerController,
 	{
 		DSPlayerController->PlayerSessionId = PlayerSessionId;
 		DSPlayerController->Username = Username;
+	}
+	if (LobbyStatus != ELobbyStatus::SeamlessTravelling)
+	{
+		AddPlayerInfoToLobbyState(NewPlayerController);
 	}
 
 	return InitializedString;
@@ -127,6 +142,27 @@ void ADS_LobbyGameMode::TryAcceptPlayerSession(const FString& PlayerSessionId, c
 	}
 	
 #endif
+}
+
+void ADS_LobbyGameMode::AddPlayerInfoToLobbyState(AController* Player) const
+{
+	ADSPlayerController* DSPlayerController = Cast<ADSPlayerController>(Player);
+	ADS_GameState* DSGameState = GetGameState<ADS_GameState>();
+	if (IsValid(DSGameState) && IsValid(DSGameState->LobbyState) && IsValid(DSPlayerController))
+	{
+		FLobbyPlayerInfo PlayerInfo(DSPlayerController->Username);
+		DSGameState->LobbyState->AddPlayerInfo(PlayerInfo);
+	}
+}
+
+void ADS_LobbyGameMode::RemovePlayerInfoFromLobbyState(AController* Player) const
+{
+	ADSPlayerController* DSPlayerController = Cast<ADSPlayerController>(Player);
+	ADS_GameState* DSGameState = GetGameState<ADS_GameState>();
+	if (IsValid(DSGameState) && IsValid(DSGameState->LobbyState) && IsValid(DSPlayerController))
+	{
+		DSGameState->LobbyState->RemovePlayerInfo(DSPlayerController->Username);
+	}
 }
 
 
