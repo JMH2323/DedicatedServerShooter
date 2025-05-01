@@ -28,7 +28,7 @@ public:
 	
 	UPROPERTY()
 	FOnRetrieveMatchStatsResponseReceived OnRetrieveMatchStatsResponseReceived;
-
+	
 private:
 	void RecordMatchStats_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	void RetrieveMatchStats_Response(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);

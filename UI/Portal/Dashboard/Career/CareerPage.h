@@ -32,14 +32,11 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UScrollBox> ScrollBox_Achievements;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCareerAchievement> CareerAchievementClass;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> TextBlock_StatusMessage;
 
 	UFUNCTION()
-	void OnRetrieveMatchStats(const FDSRetrieveMatchStatsResponse& RetrieveMatchStatsResponse);
+	virtual void OnRetrieveMatchStats(const FDSRetrieveMatchStatsResponse& RetrieveMatchStatsResponse);
 
 	UFUNCTION()
 	void SetStatusMessage(const FString& StatusMessage, bool bShouldResetWidgets);

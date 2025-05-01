@@ -2,6 +2,7 @@
 
 
 #include "CareerPage.h"
+#include "DedicatedServers/UI/HTTP/HTTPRequestTypes.h"
 #include "Components/TextBlock.h"
 
 
@@ -17,7 +18,9 @@ void UCareerPage::NativeConstruct()
 
 void UCareerPage::OnRetrieveMatchStats(const FDSRetrieveMatchStatsResponse& RetrieveMatchStatsResponse)
 {
-	
+	TextBlock_Username->SetText(FText::FromString(RetrieveMatchStatsResponse.username));
+	TextBlock_Wins->SetText(FText::AsNumber(RetrieveMatchStatsResponse.matchWins));
+	TextBlock_Losses->SetText(FText::AsNumber(RetrieveMatchStatsResponse.matchLosses));
 }
 
 void UCareerPage::SetStatusMessage(const FString& StatusMessage, bool bShouldResetWidgets)
