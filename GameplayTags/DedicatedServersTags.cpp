@@ -21,7 +21,9 @@ namespace DedicatedServersTags
 	namespace GameStatsAPI
 	{
 		UE_DEFINE_GAMEPLAY_TAG(RecordMatchStats, "DedicatedServersTags.GameStatsAPI.RecordMatchStats")
-		UE_DEFINE_GAMEPLAY_TAG(RetrieveMatchStats, "DedicatedServersTags.GameStatsAPI.RetrieveMatchStats")	
+		UE_DEFINE_GAMEPLAY_TAG(RetrieveMatchStats, "DedicatedServersTags.GameStatsAPI.RetrieveMatchStats")
+		UE_DEFINE_GAMEPLAY_TAG(UpdateLeaderboard, "DedicatedServersTags.GameStatsAPI.UpdateLeaderboard")
+		UE_DEFINE_GAMEPLAY_TAG(RetrieveLeaderboard, "DedicatedServersTags.GameStatsAPI.RetrieveLeaderboard")
 	}
 	
 }
