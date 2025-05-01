@@ -55,6 +55,7 @@ void UGameStatsManager::RecordMatchStats_Response(FHttpRequestPtr Request, FHttp
 
 void UGameStatsManager::RetrieveMatchStats()
 {
+	RetrieveMatchStatsStatusMessage.Broadcast(TEXT("Retrieving stats..."), false);
 	
 	UDSLocalPlayerSubsystem* LocalPlayerSubsystem = GetDSLocalPlayerSubsystem();
 	if (!IsValid(LocalPlayerSubsystem)) return;
@@ -82,6 +83,7 @@ void UGameStatsManager::RetrieveMatchStats_Response(FHttpRequestPtr Request, FHt
 	if (!bWasSuccessful)
 	{
 		OnRetrieveMatchStatsResponseReceived.Broadcast(FDSRetrieveMatchStatsResponse());
+		RetrieveMatchStatsStatusMessage.Broadcast(TEXT("Something went wrong"), false);
 		return;
 	}
 
