@@ -1,0 +1,24 @@
+import { CognitoIdentityProviderClient, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider"; 
+import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+
+export const handler = async (event) => {
+  const cognitoClient = new CognitoIdentityProviderClient( { region: process.env.REGION } );
+  const dynamoDBClient = new DynamoDBClient( { region: process.env.REGION } );
+
+  try {
+    const getUserCommand = new GetUserCommand( { AccessToken: event.accessToken } );
+    const getUserResponse = await cognitoClient.send(getUserCommand);
+    const sub = getUserResponse.UserAttributes.find( attribute => attribute.Name === "sub" ).Value;
+
+    const getItemCommand = new GetItemCommand({
+      TableName: "Players",
+      Key: marshall( { databaseid: sub } )
+    });
+    const getItemResponse = await dynamoDBClient.send(getItemCommand);
+    const playerStats = getItemResponse.Item ? unmarshall( getItemResponse.Item ) : {};
+    return playerStats;
+  } catch(error) {
+    return error;
+  }
+};
