@@ -6,9 +6,11 @@
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
 #include "Interfaces/IHttpRequest.h"
+#include "Interfaces/IHttpResponse.h"
 #include "../HTTP/HTTPRequestTypes.h"
 #include "../../Data/API/APIData.h"
 #include "../../GameplayTags/DedicatedServersTags.h"
+#include "DedicatedServers/DedicatedServers.h"
 
 void UGameStatsManager::RecordMatchStats(const FDSRecordMatchStatsInput RecordMatchStatsInput)
 {
@@ -30,4 +32,20 @@ void UGameStatsManager::RecordMatchStats(const FDSRecordMatchStatsInput RecordMa
 	Request->SetContentAsString(JsonString);
 	Request->ProcessRequest();
 	
+}
+
+void UGameStatsManager::RecordMatchStats_Response(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	if (!bWasSuccessful)
+	{
+		UE_LOG(LogDedicatedServers, Error, TEXT("RecordMatchStats failed."))
+	}
+	
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
+	{
+		ContainsErrors(JsonObject);
+	}
 }

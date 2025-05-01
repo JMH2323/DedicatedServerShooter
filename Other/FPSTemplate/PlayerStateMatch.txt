@@ -1,0 +1,31 @@
+// Goes into the active playerstate used in the FPS Project Gamemode
+void AMatchPlayerState::OnMatchEnded(const FString& Username) // Override
+{
+	Super::OnMatchEnded(Username);
+
+	// Winner logic
+	AMatchGameState* MatchGameState = Cast<AMatchGameState>(UGameplayStatics::GetGameState(this));
+	if (IsValid(MatchGameState))
+	{
+		bWinner = MatchGameState->GetLeader() == this;
+	}
+
+	FDSRecordMatchStatsInput RecordMatchStatsInput;
+	RecordMatchStatsInput.username = Username;
+
+	RecordMatchStatsInput.matchStats.scoredElims = ScoredElims;
+	RecordMatchStatsInput.matchStats.deaths = Defeats;
+	RecordMatchStatsInput.matchStats.hits = Hits;
+	RecordMatchStatsInput.matchStats.misses = Misses;
+	RecordMatchStatsInput.matchStats.headShotElims = HeadShotElims;
+	RecordMatchStatsInput.matchStats.highestStreak = HighestStreak;
+	RecordMatchStatsInput.matchStats.revengeElims = RevengeElims;
+	RecordMatchStatsInput.matchStats.dethroneElims = DethroneElims;
+	RecordMatchStatsInput.matchStats.showstopperElims = ShowStopperElims;
+	RecordMatchStatsInput.matchStats.gotFirstBlood = bFirstBlood ? 1 : 0;
+	RecordMatchStatsInput.matchStats.matchWins = bWinner ? 1 : 0;
+	RecordMatchStatsInput.matchStats.matchLosses = bWinner ? 0 : 1;
+
+	RecordMatchStats(RecordMatchStatsInput);
+
+}

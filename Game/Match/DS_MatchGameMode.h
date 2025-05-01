@@ -42,6 +42,8 @@ protected:
 
 	void SetClientInputEnabled(bool bEnabled);
 
+	void OnMatchEnded();
+
 	
 
 	
