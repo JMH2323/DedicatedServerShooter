@@ -94,6 +94,7 @@ void UGameStatsManager::RetrieveMatchStats_Response(FHttpRequestPtr Request, FHt
 		if (ContainsErrors(JsonObject))
 		{
 			OnRetrieveMatchStatsResponseReceived.Broadcast(FDSRetrieveMatchStatsResponse());
+			RetrieveMatchStatsStatusMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, false);
 			return;
 		}
 
@@ -102,5 +103,6 @@ void UGameStatsManager::RetrieveMatchStats_Response(FHttpRequestPtr Request, FHt
 		RetrieveMatchStatsResponse.Dump();
 
 		OnRetrieveMatchStatsResponseReceived.Broadcast(RetrieveMatchStatsResponse);
+		RetrieveMatchStatsStatusMessage.Broadcast(TEXT(""), false);
 	}
 }
