@@ -317,3 +317,56 @@ struct FDSRecordMatchStatsInput
 	UPROPERTY()
 	FString username{};
 };
+
+USTRUCT()
+struct FDSRetrieveMatchStatsResponse
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	int32 highestStreak;
+
+	UPROPERTY()
+	int32 dethroneElims;
+
+	UPROPERTY()
+	int32 gotFirstBlood;
+
+	UPROPERTY()
+	int32 deaths;
+
+	UPROPERTY()
+	int32 scoredElims;
+
+	UPROPERTY()
+	FString email;
+
+	UPROPERTY()
+	int32 misses;
+
+	UPROPERTY()
+	int32 revengeElims;
+
+	UPROPERTY()
+	int32 matchLosses;
+
+	UPROPERTY()
+	int32 showstopperElims;
+
+	UPROPERTY()
+	FString databaseid;
+
+	UPROPERTY()
+	int32 headShotElims;
+
+	UPROPERTY()
+	FString username;
+
+	UPROPERTY()
+	int32 hits;
+
+	UPROPERTY()
+	int32 matchWins;
+
+	void Dump() const;
+};
