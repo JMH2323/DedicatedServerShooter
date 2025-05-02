@@ -60,6 +60,7 @@ void ADS_MatchGameMode::OnCountdownTimerFinished(ECountdownTimerType Type)
 		MatchStatus = EMatchStatus::PostMatch;
 		StartCountdownTimer(PostMatchTimer);
 		SetClientInputEnabled(false);
+		OnMatchEnded();
 	}
 	if (Type == ECountdownTimerType::PostMatch)
 	{
@@ -73,6 +74,7 @@ void ADS_MatchGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	
 	GameStatsManager = NewObject<UGameStatsManager>(this, GameStatsManagerClass);
 	GameStatsManager->OnUpdateLeaderboardSucceeded.AddDynamic(this, &ADS_MatchGameMode::ADS_MatchGameMode::OnLeaderboardUpdated);	
 }
@@ -119,5 +121,14 @@ void ADS_MatchGameMode::SetClientInputEnabled(bool bEnabled)
 
 void ADS_MatchGameMode::OnMatchEnded()
 {
-	
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (ADSPlayerController* DSPlayerController = Cast<ADSPlayerController>(Iterator->Get()); IsValid(DSPlayerController))
+		{
+			if (ADS_MatchPlayerState* MatchPlayerState = DSPlayerController->GetPlayerState<ADS_MatchPlayerState>(); IsValid(MatchPlayerState))
+			{
+				MatchPlayerState->OnMatchEnded(DSPlayerController->Username);
+			}
+		}
+	}
 }

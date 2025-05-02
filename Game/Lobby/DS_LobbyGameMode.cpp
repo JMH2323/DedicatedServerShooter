@@ -15,7 +15,7 @@ ADS_LobbyGameMode::ADS_LobbyGameMode()
 {
 	bUseSeamlessTravel = true;
 	LobbyStatus = ELobbyStatus::WaitingForPlayers;
-	MinPlayers = 1; // TODO: Change Minimum Players post-testing
+	MinPlayers = 2; // TODO: Change Minimum Players post-testing
 	LobbyCountdownTimer.Type = ECountdownTimerType::LobbyCountdown;
 }
 

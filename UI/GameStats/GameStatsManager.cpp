@@ -179,6 +179,11 @@ void UGameStatsManager::RetrieveLeaderboard_Response(FHttpRequestPtr Request, FH
 	TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 	if (FJsonSerializer::Deserialize(JsonReader, JsonObject))
 	{
+		if (ContainsErrors(JsonObject))
+		{
+			RetrieveLeaderboardStatusMessage.Broadcast(HTTPStatusMessages::SomethingWentWrong, false);
+			return;
+		}
 		const TArray<TSharedPtr<FJsonValue>>* LeaderboardJsonArray;
 		if (JsonObject->TryGetArrayField(TEXT("Leaderboard"), LeaderboardJsonArray))
 		{
@@ -201,4 +206,6 @@ void UGameStatsManager::RetrieveLeaderboard_Response(FHttpRequestPtr Request, FH
 		}
 	}
 	OnRetrieveLeaderboard.Broadcast(LeaderboardItems);
+	RetrieveLeaderboardStatusMessage.Broadcast(TEXT(""), false);
+
 }

@@ -18,8 +18,8 @@ void ADS_MatchPlayerState::BeginPlay()
 
 void ADS_MatchPlayerState::RecordMatchStats(const FDSRecordMatchStatsInput& RecordMatchStatsInput) const
 {
-
 	check(IsValid(GameStatsManager));
-	
-	
+	GameStatsManager->RecordMatchStats(RecordMatchStatsInput);
 }
+	
+
