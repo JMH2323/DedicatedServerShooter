@@ -7,6 +7,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "DedicatedServers/UI/Portal/SignIn/Widgets/SignInPage.h"
 #include "DedicatedServers/UI/Portal/SignIn/Widgets/SignUpPage.h"
+#include "DedicatedServers/Player/DSLocalPlayerSubsystem.h"
 #include "DedicatedServers/UI/Portal/SignIn/Widgets/ConfirmSignUpPage.h"
 #include "DedicatedServers/UI/Portal/SignIn/Widgets/SuccessConfirmedPage.h"
 #include "Components/TextBlock.h"
@@ -39,10 +40,27 @@ void USignInOverlay::NativeConstruct()
 	
 	SuccessConfirmedPage->Button_Ok->OnClicked.AddDynamic(this, &USignInOverlay::ShowSignInPage);
 	// }
+
+	ShowSignInPage();
+	AutoSignIn();
+}
+
+void USignInOverlay::AutoSignIn()
+{
+	if (UDSLocalPlayerSubsystem* DSLocalPlayerSubsystem = PortalManager->GetDSLocalPlayerSubsystem(); IsValid(DSLocalPlayerSubsystem))
+	{
+		const FString& Username = DSLocalPlayerSubsystem->Username;
+		const FString& Password = DSLocalPlayerSubsystem->Password;
+		if (Username.IsEmpty() || Password.IsEmpty()) return;
+
+		SignInPage->Button_SignIn->SetIsEnabled(false);
+		PortalManager->SignIn(Username, Password);
+	}
 }
 
 void USignInOverlay::ShowSignInPage()
 {
+	SignInPage->Button_SignIn->SetIsEnabled(true);
 	check(IsValid(WidgetSwitcher) && IsValid(SignInPage));
 	WidgetSwitcher->SetActiveWidget(SignInPage);
 }
@@ -77,6 +95,10 @@ void USignInOverlay::SignUpButtonClicked()
 	const FString Username = SignUpPage->TextBox_UserName->GetText().ToString();
 	const FString Password = SignUpPage->TextBox_Password->GetText().ToString();
 	const FString Email = SignUpPage->TextBox_Email->GetText().ToString();
+	if (UDSLocalPlayerSubsystem* DSLocalPlayerSubsystem = PortalManager->GetDSLocalPlayerSubsystem(); IsValid(DSLocalPlayerSubsystem))
+	{
+		DSLocalPlayerSubsystem->Password = Password;
+	}
 	PortalManager->SignUp(Username, Password, Email);
 }
 
