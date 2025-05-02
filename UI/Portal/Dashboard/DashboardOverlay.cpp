@@ -8,8 +8,7 @@
 #include "Career/CareerPage.h"
 #include "Widgets/GamePage.h"
 #include "DedicatedServers/UI/GameStats/GameStatsManager.h"
-#include "Widgets/LeaderboardPage.h"
-
+#include "DedicatedServers/UI/Portal/Dashboard/Leaderboard/LeaderboardPage.h"
 
 void UDashboardOverlay::NativeConstruct()
 {
@@ -22,6 +21,8 @@ void UDashboardOverlay::NativeConstruct()
 	GameStatsManager = NewObject<UGameStatsManager>(this, GameStatsManagerClass);
 	GameStatsManager->OnRetrieveMatchStatsResponseReceived.AddDynamic(CareerPage, &UCareerPage::OnRetrieveMatchStats);
 	GameStatsManager->RetrieveMatchStatsStatusMessage.AddDynamic(CareerPage, &UCareerPage::SetStatusMessage);
+	GameStatsManager->OnRetrieveLeaderboard.AddDynamic(LeaderboardPage, &ULeaderboardPage::PopulateLeaderboard);
+	GameStatsManager->RetrieveLeaderboardStatusMessage.AddDynamic(LeaderboardPage, &ULeaderboardPage::SetStatusMessage);
 }
 
 void UDashboardOverlay::ShowGamePage()
@@ -41,6 +42,7 @@ void UDashboardOverlay::ShowLeaderboardPage()
 {
 	DisableButton(LeaderButton);
 	WidgetSwitcher->SetActiveWidget(LeaderboardPage);
+	GameStatsManager->RetrieveLeaderboard();
 }
 
 void UDashboardOverlay::DisableButton(UButton* Button) const
