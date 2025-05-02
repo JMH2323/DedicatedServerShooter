@@ -2,7 +2,7 @@
 
 
 #include "DS_MatchGameMode.h"
-
+#include "DedicatedServers/UI/GameStats/GameStatsManager.h"
 #include "DedicatedServers/Player/DSPlayerController.h"
 #include "DedicatedServers/Player/Match/DS_MatchPlayerState.h"
 
@@ -69,6 +69,42 @@ void ADS_MatchGameMode::OnCountdownTimerFinished(ECountdownTimerType Type)
 	}
 }
 
+void ADS_MatchGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GameStatsManager = NewObject<UGameStatsManager>(this, GameStatsManagerClass);
+	GameStatsManager->OnUpdateLeaderboardSucceeded.AddDynamic(this, &ADS_MatchGameMode::ADS_MatchGameMode::OnLeaderboardUpdated);	
+}
+
+void ADS_MatchGameMode::EndMatchForPlayerStates()
+{
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{				
+		if (ADSPlayerController* PlayerController = Cast<ADSPlayerController>(*Iterator); IsValid(PlayerController))
+		{
+			if (ADS_MatchPlayerState* MatchPlayerState = PlayerController->GetPlayerState<ADS_MatchPlayerState>(); IsValid(MatchPlayerState))
+			{
+				MatchPlayerState->OnMatchEnded(PlayerController->Username);
+			}
+		}
+	}
+}
+
+void ADS_MatchGameMode::UpdateLeaderboard(const TArray<FString>& LeaderboardNames)
+{
+	if (IsValid(GameStatsManager))
+	{
+		GameStatsManager->UpdateLeaderboard(LeaderboardNames);
+	}
+}
+
+
+void ADS_MatchGameMode::OnLeaderboardUpdated()
+{
+	EndMatchForPlayerStates();
+}
+
 void ADS_MatchGameMode::SetClientInputEnabled(bool bEnabled)
 {
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
@@ -83,14 +119,5 @@ void ADS_MatchGameMode::SetClientInputEnabled(bool bEnabled)
 
 void ADS_MatchGameMode::OnMatchEnded()
 {
-	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-	{				
-		if (ADSPlayerController* PlayerController = Cast<ADSPlayerController>(*Iterator); IsValid(PlayerController))
-		{
-			if (ADS_MatchPlayerState* MatchPlayerState = PlayerController->GetPlayerState<ADS_MatchPlayerState>(); IsValid(MatchPlayerState))
-			{
-				MatchPlayerState->OnMatchEnded(PlayerController->Username);
-			}
-		}
-	}
+	
 }

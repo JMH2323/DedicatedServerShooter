@@ -6,6 +6,8 @@
 #include "DedicatedServers/Game/DS_GameModeBase.h"
 #include "DS_MatchGameMode.generated.h"
 
+
+class UGameStatsManager;
 /**
  * 
  */
@@ -25,8 +27,16 @@ public:
 	UPROPERTY()
 	EMatchStatus MatchStatus;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameStatsManager> GameStatsManagerClass;
+
 protected:
 	virtual void OnCountdownTimerFinished(ECountdownTimerType Type) override;
+	virtual void BeginPlay() override;
+	void SetClientInputEnabled(bool bEnabled);
+	void EndMatchForPlayerStates();
+	virtual void OnMatchEnded();
+	void UpdateLeaderboard(const TArray<FString>& LeaderboardNames);
 
 	UPROPERTY(EditDefaultsOnly)
 	FCountdownTimerHandle PreMatchTimer;
@@ -40,11 +50,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSoftObjectPtr<UWorld> LobbyMap;
 
-	void SetClientInputEnabled(bool bEnabled);
-
-	void OnMatchEnded();
-
+	UFUNCTION()
+	void OnLeaderboardUpdated();
 	
+private:
 
+	UPROPERTY()
+	TObjectPtr<UGameStatsManager> GameStatsManager;
 	
 };
+
